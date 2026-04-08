@@ -1,0 +1,15 @@
+syntax = "proto3";
+package conference;
+option go_package = "pkg/conference";
+
+service ConferenceService {
+  rpc CreateConference(CreateConferenceRequest) returns (CreateConferenceResponse);
+}
+
+message CreateConferenceRequest {
+  string booking_id = 1;
+}
+
+message CreateConferenceResponse {
+  string conference_link = 1;
+}

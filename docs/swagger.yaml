@@ -1,0 +1,672 @@
+basePath: /
+definitions:
+  dto.BookingListResponse:
+    properties:
+      bookings:
+        items:
+          $ref: '#/definitions/dto.BookingResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.PaginationResponse'
+    type: object
+  dto.BookingResponse:
+    properties:
+      conferenceLink:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      slotId:
+        type: string
+      status:
+        type: string
+      userId:
+        type: string
+    type: object
+  dto.CancelBookingResponse:
+    properties:
+      booking:
+        $ref: '#/definitions/dto.BookingResponse'
+    type: object
+  dto.CreateBookingRequest:
+    properties:
+      createConferenceLink:
+        type: boolean
+      slotId:
+        type: string
+    type: object
+  dto.CreateBookingResponse:
+    properties:
+      booking:
+        $ref: '#/definitions/dto.BookingResponse'
+    type: object
+  dto.DummyLoginRequest:
+    properties:
+      role:
+        type: string
+    type: object
+  dto.MyBookingsResponse:
+    properties:
+      bookings:
+        items:
+          $ref: '#/definitions/dto.BookingResponse'
+        type: array
+    type: object
+  dto.PaginationResponse:
+    properties:
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      totalItems:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  dto.RoomCreateRequest:
+    properties:
+      capacity:
+        description: nullable
+        type: integer
+      description:
+        description: nullable
+        type: string
+      name:
+        type: string
+    type: object
+  dto.RoomCreateResponse:
+    properties:
+      room:
+        $ref: '#/definitions/dto.RoomResponse'
+    type: object
+  dto.RoomListResponse:
+    properties:
+      rooms:
+        items:
+          $ref: '#/definitions/dto.RoomResponse'
+        type: array
+    type: object
+  dto.RoomResponse:
+    properties:
+      capacity:
+        type: integer
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.ScheduleCreateRequest:
+    properties:
+      daysOfWeek:
+        items:
+          type: integer
+        type: array
+      endTime:
+        type: string
+      startTime:
+        type: string
+    type: object
+  dto.ScheduleCreateResponse:
+    properties:
+      schedule:
+        $ref: '#/definitions/dto.ScheduleResponse'
+    type: object
+  dto.ScheduleResponse:
+    properties:
+      daysOfWeek:
+        items:
+          type: integer
+        type: array
+      endTime:
+        type: string
+      id:
+        type: string
+      roomId:
+        type: string
+      startTime:
+        type: string
+    type: object
+  dto.SlotListResponse:
+    properties:
+      slots:
+        items:
+          $ref: '#/definitions/dto.SlotResponse'
+        type: array
+    type: object
+  dto.SlotResponse:
+    properties:
+      end:
+        type: string
+      id:
+        type: string
+      roomId:
+        type: string
+      start:
+        type: string
+    type: object
+  dto.TokenResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  dto.UserLoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  dto.UserRegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+  dto.UserRegisterResponse:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      role:
+        $ref: '#/definitions/model.Role'
+    type: object
+  model.Role:
+    enum:
+    - admin
+    - user
+    type: string
+    x-enum-varnames:
+    - RoleAdmin
+    - RoleUser
+  server.ErrorCode:
+    enum:
+    - INVALID_REQUEST
+    - UNAUTHORIZED
+    - NOT_FOUND
+    - ROOM_NOT_FOUND
+    - SLOT_NOT_FOUND
+    - SLOT_ALREADY_BOOKED
+    - BOOKING_NOT_FOUND
+    - FORBIDDEN
+    - SCHEDULE_EXISTS
+    - INTERNAL_ERROR
+    type: string
+    x-enum-comments:
+      CodeBookingNotFound: в документации нет упоминания в каких кейсах используется
+    x-enum-descriptions:
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - ""
+    - в документации нет упоминания в каких кейсах используется
+    - ""
+    - ""
+    - ""
+    x-enum-varnames:
+    - CodeInvalidRequest
+    - CodeUnauthorized
+    - CodeNotFound
+    - CodeRoomNotFound
+    - CodeSlotNotFound
+    - CodeSlotAlreadyBooked
+    - CodeBookingNotFound
+    - CodeForbidden
+    - CodeScheduleExists
+    - CodeInternalError
+  server.ErrorDetail:
+    properties:
+      code:
+        $ref: '#/definitions/server.ErrorCode'
+      message:
+        type: string
+    type: object
+  server.ErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/server.ErrorDetail'
+    type: object
+  server.InternalErrorResponse:
+    properties:
+      error:
+        $ref: '#/definitions/server.ErrorDetail'
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API для бронирования переговорных комнат
+  title: Booking Service API
+  version: "1.0"
+paths:
+  /bookings/{bookingId}/cancel:
+    post:
+      description: Отменить свою бронь (только user). Идемпотентно — повторный вызов
+        не ошибка.
+      parameters:
+      - description: ID бронирования
+        format: uuid
+        in: path
+        name: bookingId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CancelBookingResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Отменить бронь
+      tags:
+      - Bookings
+  /bookings/create:
+    post:
+      consumes:
+      - application/json
+      description: Забронировать слот (только user). userId берётся из JWT-токена.
+      parameters:
+      - description: Данные бронирования
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateBookingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateBookingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать бронь на слот
+      tags:
+      - Bookings
+  /bookings/list:
+    get:
+      description: Получить список всех бронирований (только admin)
+      parameters:
+      - default: 1
+        description: Номер страницы (по умолчанию 1)
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 20
+        description: Размер страницы (по умолчанию 20, максимум 100)
+        in: query
+        maximum: 100
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BookingListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Список всех броней с пагинацией
+      tags:
+      - Bookings
+  /bookings/my:
+    get:
+      description: Возвращает брони пользователя из JWT. Только будущие слоты (start
+        >= now).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MyBookingsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Список броней текущего пользователя
+      tags:
+      - Bookings
+  /dummyLogin:
+    post:
+      consumes:
+      - application/json
+      description: Выдаёт тестовый JWT для указанной роли (admin / user). Доступен
+        без авторизации.
+      parameters:
+      - description: Роль
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DummyLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      summary: Получить тестовый JWT по роли
+      tags:
+      - Auth
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизует пользователя, возвращает JWT. Доступен без авторизации.
+      parameters:
+      - description: Данные входа
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.TokenResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      summary: Авторизация по email и паролю
+      tags:
+      - Auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Создать нового пользователя. Доступен без авторизации.
+      parameters:
+      - description: Данные регистрации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.UserRegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      summary: Регистрация пользователя
+      tags:
+      - Auth
+  /rooms/{roomId}/schedule/create:
+    post:
+      consumes:
+      - application/json
+      description: Создать расписание для переговорки (только admin, только один раз).
+        Длительность слота 30 мин.
+      parameters:
+      - description: ID комнаты
+        format: uuid
+        in: path
+        name: roomId
+        required: true
+        type: string
+      - description: Данные расписания
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ScheduleCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.ScheduleCreateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать расписание переговорки
+      tags:
+      - Schedules
+  /rooms/{roomId}/slots/list:
+    get:
+      description: Возвращает слоты, не занятые активной бронью, для указанной переговорки
+        на указанную дату
+      parameters:
+      - description: ID комнаты
+        format: uuid
+        in: path
+        name: roomId
+        required: true
+        type: string
+      - description: 'Дата в формате ISO 8601 (например: 2024-06-10)'
+        format: date
+        in: query
+        name: date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SlotListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Список доступных слотов
+      tags:
+      - Slots
+  /rooms/create:
+    post:
+      consumes:
+      - application/json
+      description: Создать новую переговорную комнату (только admin)
+      parameters:
+      - description: Данные комнаты
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RoomCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.RoomCreateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать переговорку
+      tags:
+      - Rooms
+  /rooms/list:
+    get:
+      description: Получить список всех переговорных комнат (admin и user)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RoomListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.InternalErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Список переговорок
+      tags:
+      - Rooms
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

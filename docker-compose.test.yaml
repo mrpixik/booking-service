@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: booking-service-test-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tester
+      POSTGRES_PASSWORD: test123
+      POSTGRES_DB: booking-test-db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U tester -d booking-test-db" ]
+      interval: 10s
+      timeout: 1s
+      retries: 5
+    volumes:
+      - pgdata-test:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - local
+
+  migrations:
+    image: ghcr.io/kukymbr/goose-docker:3.26.0
+    container_name: booking-service-test-migrations
+    restart: no
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - GOOSE_DRIVER=postgres
+      - GOOSE_DBSTRING=postgres://tester:test123@booking-service-test-db:5432/booking-test-db?sslmode=disable
+    volumes:
+      - ./migrations:/migrations
+    networks:
+      - local
+
+networks:
+  local:
+    driver: bridge
+
+volumes:
+  pgdata-test:

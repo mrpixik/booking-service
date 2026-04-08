@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: booking-service-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: booking-db
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}'" ]
+      interval: 10s
+      timeout: 1s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - local
+
+
+  migrations:
+    image: ghcr.io/kukymbr/goose-docker:3.26.0
+    container_name: booking-service-migrations
+    restart: no
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - GOOSE_DRIVER=${GOOSE_DRIVER}
+      - GOOSE_DBSTRING=${GOOSE_DBSTRING}
+    volumes:
+      - ./migrations:/migrations
+    networks:
+      - local
+
+networks:
+  local:
+    driver: bridge
+
+volumes:
+  pgdata:

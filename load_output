@@ -1,0 +1,60 @@
+.\k6.exe run loadtest/slots.js
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+
+     execution: local
+        script: loadtest/slots.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 100 max VUs, 1m30s max duration (incl. graceful stop):
+              * default: Up to 100 looping VUs for 1m0s over 3 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+INFO[0000] room status: 201 body: {"room":{"id":"2d71170d-a84c-4011-bf92-347b332a0a99","name":"Load Test Room","description":null,"capacity":10,"createdAt":"2026-03-25T20:10:06.383885Z"}}  source=console
+INFO[0000] schedule status: 201 body: {"schedule":{"id":"f5f9d0b4-4451-443f-b825-49accddb1199","roomId":"2d71170d-a84c-4011-bf92-347b332a0a99","daysOfWeek":[1,2,3,4,5],"startTime":"09:00:00","endTime":"18:00:00"}}  source=console
+INFO[0000] roomId: 2d71170d-a84c-4011-bf92-347b332a0a99 date: 2026-03-25  source=console
+
+
+  █ THRESHOLDS
+
+    http_req_duration
+    ✓ 'p(95)<200' p(95)=6ms
+
+    http_req_failed
+    ✓ 'rate<0.001' rate=0.00%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 64862   1078.402525/s
+    checks_succeeded...: 100.00% 64862 out of 64862
+    checks_failed......: 0.00%   0 out of 64862
+
+    ✓ status 200
+    ✓ response < 200ms
+
+    HTTP
+    http_req_duration..............: avg=3.29ms   min=952.8µs  med=3ms      max=41.09ms  p(90)=4.99ms   p(95)=6ms
+      { expected_response:true }...: avg=3.29ms   min=952.8µs  med=3ms      max=41.09ms  p(90)=4.99ms   p(95)=6ms
+    http_req_failed................: 0.00% 0 out of 32435
+    http_reqs......................: 32435 539.267767/s
+
+    EXECUTION
+    iteration_duration.............: avg=103.97ms min=100.99ms med=103.54ms max=145.44ms p(90)=105.68ms p(95)=107ms
+    iterations.....................: 32431 539.201263/s
+    vus............................: 1     min=1          max=99
+    vus_max........................: 100   min=100        max=100
+
+    NETWORK
+    data_received..................: 94 MB 1.6 MB/s
+    data_sent......................: 12 MB 202 kB/s
+
+
+
+
+running (1m00.1s), 000/100 VUs, 32431 complete and 0 interrupted iterations
+default ✓ [======================================] 000/100 VUs  1m0s
